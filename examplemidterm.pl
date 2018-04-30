@@ -1,3 +1,5 @@
+:- use_module(naive_sat).
+
 /*task1 - nanogram line*/
 /*A*/
 place_block(Block, N, [X|Xs], ReducedN, ReducedXs) :-
@@ -60,11 +62,51 @@ build_nonogram(0, []).
 
 /*-------------------------------*/
 /*task2*/
+bin_gen(Xs, N) :-
+    direct(Xs, N, CNF),
+    sat(CNF).
 /*A*/
 
+direct(Xs, N, CNF) :-
+    length(Xs, N),
+    build_not_more_than_one_cnf(Xs, CNF1),  % for each i, (NOT Ci OR NOT Cj)
+    build_atleast_one_cnf(Xs, CNF2), %Ci OR until Cn
+    append(CNF1, CNF2, CNF).
+
+build_not_more_than_one_cnf([X1, X2 | Rest], CNF) :-
+    build_not_more_than_one_cnf([X1 | Rest], CNF1),
+    build_not_more_than_one_cnf([X2 | Rest], CNF2),
+    append([[[-X1, -X2]], CNF1, CNF2], CNF).
+
+build_not_more_than_one_cnf([], []).
+build_not_more_than_one_cnf([_], []).
+
+build_atleast_one_cnf(Xs, CNF):-
+    append([[Xs]], CNF).
 /*B*/
 
+diff(Xs,Ys,Cnf) :-
+    length(Xs, N),
+    direct(Xs, N, CNFX),
+    direct(Ys, N, CNFY),
+    build_both_not_one_cnf(Xs, Ys, CNFXY),
+    append([CNFX, CNFY, CNFXY], CNF).
+
+build_both_not_one_cnf([X|Xs], [Y|Ys], CNF) :-
+    build_both_not_one_cnf(Xs, Ys, CNF1),
+    append([[[-X, -Y]], CNF1], CNF).
+
+build_both_not_one_cnf([],[],[]).
+
 /*C*/
+allDiff([X,Y|XXs],N,CNF) :-
+    diff(X, Y, CNFDIFF),
+    allDiff(X, N, CNFRECURSIONX),
+    allDiff(Y, N, CNFRECURSIONY),
+    append([CNFDIFF, CNFRECURSIONX, CNFRECURSIONY], CNF).
+
+allDiff([],_,[]).
+
 
 /*-------------------------------*/
 /*task3*/
@@ -75,7 +117,31 @@ build_nonogram(0, []).
 /*-------------------------------*/
 /*task4*/
 /*A*/
+bit_vector(N, Vector) :-
+    create_vector(N, Vector).
+
+create_vector(N, [0|Vector]) :-
+    N > 0,
+    N1 is N - 1,
+    create_vector(N1, Vector).
+
+create_vector(N, [1|Vector]) :-
+    N > 0,
+    N1 is N - 1,
+    create_vector(N1, Vector).
+
+create_vector(0, []).
 
 /*B*/
+% apply_network(Cs,In,Out) :-
+%     apply_network(Cs).
+
+% apply_network([comparator(In1,In2,In1,In2)|RestComparators]) :-
+%     In1 <= In2,
+%     apply_network(RestComparators).
+
+% apply_network([comparator(In1,In2,In2,In1)|RestComparators]) :-
+%     In2 > In1,
+%     apply_network(RestComparators).
 
 /*C*/
